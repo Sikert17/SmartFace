@@ -223,6 +223,8 @@
     font-family: var(--font-mono); font-size: .72rem; color: var(--muted);
   }
   .t-grid { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 24px 24px; }
+  .t-ledger { background-color: #f4f7f5; background-image: linear-gradient(to right, transparent calc(100% - 1px), #dbe8e1 0), linear-gradient(to bottom, transparent calc(100% - 1px), #dbe8e1 0); background-size: 48px 100%, 100% 16px; }
+  .t-ledger::after { color: #1d5a48; }
   .t-lines { background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 14px); }
   .t-dots { background-image: radial-gradient(var(--muted) 1px, transparent 1.5px); background-size: 18px 18px; }
   .t-circle { background-image: radial-gradient(circle at 70% 40%, var(--surface) 0 22%, transparent 22.5%), radial-gradient(circle at 70% 40%, var(--line) 0 30%, transparent 30.5%); }
@@ -366,13 +368,13 @@
 
       <div class="cards" id="cards">
         <article class="card" data-cat="web">
-          <div class="thumb t-grid" data-label="1440 × 900"></div>
+          <div class="thumb t-ledger" data-label="studio cerasa"></div>
           <div class="card-body">
-            <div class="card-meta"><span>Sito web</span><span>2026</span></div>
-            <h3>Studio di architettura</h3>
-            <p>Sito vetrina con archivio progetti filtrabile e pagine caso studio ottimizzate per il mobile.</p>
-            <div class="card-foot"><span class="chip">HTML</span><span class="chip">CSS</span><span class="chip">JS</span></div>
-            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+            <div class="card-meta"><span>Sito professionale</span><span>2026</span></div>
+            <h3>Studio Cerasa · Commercialista</h3>
+            <p>Sito per uno studio di commercialisti con elenco dei servizi, scadenzario fiscale che si aggiorna da solo e richiesta del primo colloquio.</p>
+            <div class="card-foot"><span class="chip">Scadenzario</span><span class="chip">Appuntamenti</span><span class="chip">Responsive</span></div>
+            <a href="https://claude.ai/artifact/DtLgJfAbTqTnERabaAXucZ" class="card-link" target="_blank" rel="noopener">Visita il sito ↗</a>
           </div>
         </article>
 
