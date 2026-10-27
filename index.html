@@ -223,8 +223,9 @@
     font-family: var(--font-mono); font-size: .72rem; color: var(--muted);
   }
   .t-grid { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 24px 24px; }
-  .t-ledger { background-color: #f4f7f5; background-image: linear-gradient(to right, transparent calc(100% - 1px), #dbe8e1 0), linear-gradient(to bottom, transparent calc(100% - 1px), #dbe8e1 0); background-size: 48px 100%, 100% 16px; }
-  .t-ledger::after { color: #1d5a48; }
+  .thumb-img { display: block; overflow: hidden; }
+  .thumb-img img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform .3s ease; }
+  .card:hover .thumb-img img { transform: scale(1.03); }
   .t-lines { background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 14px); }
   .t-dots { background-image: radial-gradient(var(--muted) 1px, transparent 1.5px); background-size: 18px 18px; }
   .t-circle { background-image: radial-gradient(circle at 70% 40%, var(--surface) 0 22%, transparent 22.5%), radial-gradient(circle at 70% 40%, var(--line) 0 30%, transparent 30.5%); }
@@ -368,7 +369,7 @@
 
       <div class="cards" id="cards">
         <article class="card" data-cat="web">
-          <div class="thumb t-ledger" data-label="studio cerasa"></div>
+          <a class="thumb thumb-img" href="https://claude.ai/artifact/DtLgJfAbTqTnERabaAXucZ" target="_blank" rel="noopener" tabindex="-1"><img src="assets/studio-cerasa.jpg" alt="Home page del sito Studio Cerasa" width="960" height="600" loading="lazy"></a>
           <div class="card-body">
             <div class="card-meta"><span>Sito professionale</span><span>2026</span></div>
             <h3>Studio Cerasa · Commercialista</h3>
