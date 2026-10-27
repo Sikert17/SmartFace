@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SmartFace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: colonna centrale stretta (max 1080px), nav fissa in alto, sezioni separate da righe sottili, card in griglia fluida */
+  /* Tema unico scuro, preso dal nero di fondo del logo SmartFace */
+  :root {
+    --bg: #0a0a0a;
+    --surface: #131313;
+    --fg: #f4f4f4;
+    --muted: #8e8e8e;
+    --line: #262626;
+    --accent: #ffffff;
+    --accent-soft: #1d1d1d;
+    --logo-grey: #6f6f6f;
+    --font-logo: "Figtree", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    --nav-h: 64px;
+    --radius: 10px;
+    --max: 1080px;
+  }
+
+  /* ---------- Logo [SMART FACE] ---------- */
+  .logo {
+    position: relative; display: inline-flex; flex-direction: column;
+    font-family: var(--font-logo); font-weight: 800; line-height: .9;
+    letter-spacing: -0.01em; padding: .32em .5em .3em .62em;
+    text-decoration: none; color: var(--fg);
+  }
+  .logo::before, .logo::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: .3em;
+    border: .17em solid var(--fg);
+  }
+  .logo::before { left: 0; border-right: 0; }
+  .logo::after { right: 0; border-left: 0; }
+  .logo .l-face { color: var(--logo-grey); }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px); z-index: 60;
+    background: var(--bg);
+  }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap {
+    max-width: var(--max);
+    margin-inline: auto;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+
+  /* ---------- Navbar ---------- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    padding-top: env(safe-area-inset-top, 0px);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s ease;
+  }
+  .nav.scrolled { border-bottom-color: var(--line); }
+  .nav-inner {
+    height: var(--nav-h);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .brand { font-size: 1rem; }
+  .nav-links { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+  .nav-links a {
+    display: block; padding: 8px 14px; border-radius: 999px;
+    text-decoration: none; font-size: .95rem; font-weight: 500; color: var(--muted);
+    transition: color .15s ease, background .15s ease;
+  }
+  .nav-links a:hover { color: var(--fg); }
+  .nav-links a.active { color: var(--fg); background: var(--accent-soft); }
+
+  .menu-btn {
+    display: none; width: 44px; height: 44px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--fg); border-radius: 10px; cursor: pointer;
+    align-items: center; justify-content: center;
+  }
+  .menu-btn svg { width: 20px; height: 20px; }
+
+  @media (max-width: 680px) {
+    .menu-btn { display: inline-flex; }
+    .nav-links {
+      position: absolute; top: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); left: 0; right: 0;
+      flex-direction: column; gap: 0;
+      padding: 8px max(20px, env(safe-area-inset-right, 0px)) 16px max(20px, env(safe-area-inset-left, 0px));
+      background: var(--bg); border-bottom: 1px solid var(--line);
+      transform: translateY(-8px); opacity: 0; pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .nav.open .nav-links { transform: none; opacity: 1; pointer-events: auto; }
+    .nav-links a { padding: 14px 12px; border-radius: 8px; font-size: 1.05rem; }
+  }
+
+  /* ---------- Sezioni ---------- */
+  main { padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); }
+  section { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); }
+  .section { padding-block: clamp(64px, 10vw, 112px); border-top: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 12px;
+  }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 700; line-height: 1.15; }
+  .lead { color: var(--muted); max-width: 60ch; margin: 16px 0 0; }
+
+  /* ---------- Chi sono ---------- */
+  .about { padding-block: clamp(56px, 9vw, 104px); }
+  .about-grid {
+    display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(32px, 6vw, 72px); align-items: start;
+  }
+  .about h1 {
+    font-size: clamp(2.4rem, 6.5vw, 4.2rem); font-weight: 700; line-height: 1.05;
+  }
+  .about h1 em { font-style: normal; color: var(--muted); }
+  .about p { max-width: 58ch; }
+  .about-text { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .about-text p { margin: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border-radius: 999px; font: 600 .95rem var(--font-body);
+    text-decoration: none; cursor: pointer; border: 1px solid var(--fg);
+    background: var(--fg); color: var(--bg); transition: opacity .15s ease, background .15s ease;
+  }
+  .btn:hover { opacity: .85; }
+  .btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+  .btn.ghost:hover { background: var(--accent-soft); opacity: 1; }
+
+  .profile {
+    /* riquadro grigio scuro, scritte chiare */
+    --bg: #3a3a3a; --surface: #3a3a3a; --fg: #f4f4f4; --muted: #c2c2c2;
+    --line: #4d4d4d; --accent-soft: #4a4a4a; --logo-grey: #6f6f6f;
+    color: var(--fg);
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; display: flex; flex-direction: column; gap: 20px; min-width: 0;
+  }
+  .profile-logo {
+    /* logo come l'originale: fondo nero, SMART bianco, FACE grigio */
+    --bg: #0a0a0a; --fg: #f4f4f4; --line: #0a0a0a; --logo-grey: #6f6f6f;
+    display: grid; place-items: center; padding-block: 28px;
+    background: var(--bg); border-radius: 8px; border: 1px solid var(--line);
+  }
+  .profile-logo .logo { font-size: clamp(2.6rem, 7vw, 3.4rem); }
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .facts li {
+    display: flex; justify-content: space-between; gap: 16px;
+    padding: 12px 0; border-top: 1px solid var(--line); font-size: .95rem;
+  }
+  .facts span:first-child { color: var(--muted); }
+  .facts span:last-child { text-align: right; font-weight: 500; }
+  .status { display: inline-flex; align-items: center; gap: 8px; }
+  .profile .chip { background: #0a0a0a; color: #f4f4f4; }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #3f9a6b; }
+
+  .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--font-mono); font-size: .78rem;
+    padding: 5px 10px; border-radius: 6px;
+    background: var(--accent-soft); color: var(--fg);
+  }
+
+  /* ---------- Progetti ---------- */
+  .section-head {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 32px;
+    margin-bottom: 40px;
+  }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filter {
+    font: 500 .88rem var(--font-body); padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .filter:hover { color: var(--fg); }
+  .filter[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--muted); }
+  .thumb {
+    aspect-ratio: 16 / 10; max-width: 100%;
+    background-color: var(--accent-soft);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .thumb::after {
+    content: attr(data-label);
+    position: absolute; left: 14px; bottom: 12px;
+    font-family: var(--font-mono); font-size: .72rem; color: var(--muted);
+  }
+  .t-grid { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 24px 24px; }
+  .t-lines { background-image: repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 14px); }
+  .t-dots { background-image: radial-gradient(var(--muted) 1px, transparent 1.5px); background-size: 18px 18px; }
+  .t-circle { background-image: radial-gradient(circle at 70% 40%, var(--surface) 0 22%, transparent 22.5%), radial-gradient(circle at 70% 40%, var(--line) 0 30%, transparent 30.5%); }
+  .t-bars { background-image: linear-gradient(90deg, var(--line) 0 18%, transparent 18% 26%, var(--line) 26% 40%, transparent 40% 48%, var(--line) 48% 78%, transparent 78%); background-size: 100% 16px; background-repeat: no-repeat; background-position: 14px 28px; }
+  .t-split { background-image: linear-gradient(90deg, transparent 50%, var(--line) 50% calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(var(--surface), var(--surface)); background-size: 100% 100%, 50% 100%; background-repeat: no-repeat; }
+
+  .card-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0; }
+  .card-meta {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-family: var(--font-mono); font-size: .75rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+  .card h3 { font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
+  .card p { margin: 0; color: var(--muted); font-size: .97rem; }
+  .card-foot { margin-top: auto; padding-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .card-link {
+    margin-top: 6px; font-weight: 600; font-size: .93rem; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  }
+  .card-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---------- Contatti ---------- */
+  .contact-wrap { display: flex; flex-direction: column; gap: 40px; }
+  .group { border: 0; margin: 0; padding: 0; display: grid; gap: 18px; min-width: 0; }
+  .group + .group { padding-top: 26px; border-top: 1px solid var(--line); }
+  .group legend {
+    float: left; width: 100%; padding: 0; margin: 0;
+    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  @media (max-width: 760px) { .grid-3 { grid-template-columns: minmax(0, 1fr); } }
+  .channels { list-style: none; padding: 0; margin: 32px 0 0; display: grid; }
+  .channels li {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 0; border-top: 1px solid var(--line);
+  }
+  .channels li:last-child { border-bottom: 1px solid var(--line); }
+  .channels .label { font-family: var(--font-mono); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: block; }
+  .channels .value { font-weight: 500; overflow-wrap: anywhere; user-select: all; }
+  .channels a.value { text-decoration: none; user-select: auto; }
+  .channels a.value:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .copy {
+    flex-shrink: 0; font: 500 .82rem var(--font-body); padding: 7px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer;
+  }
+  .copy:hover { background: var(--accent-soft); }
+
+  form {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: clamp(20px, 4vw, 32px); display: grid; gap: 18px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  label { font-size: .88rem; font-weight: 600; }
+  input, textarea {
+    width: 100%; font: inherit; font-size: 1rem; color: var(--fg);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; transition: border-color .15s ease;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  textarea { min-height: 140px; resize: vertical; }
+  .form-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .form-msg { margin: 0; font-size: .92rem; color: var(--muted); }
+  .form-msg.ok { color: var(--fg); }
+
+  footer { border-top: 1px solid var(--line); padding-block: 28px; color: var(--muted); font-size: .9rem; }
+  .foot-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+  @media (max-width: 860px) {
+    .about-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .row { grid-template-columns: minmax(0, 1fr); }
+    .btn { flex: 1 1 auto; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#chi-sono" class="logo brand" aria-label="SmartFace, torna all'inizio"><span>SMART</span><span class="l-face">FACE</span></a>
+    <button class="menu-btn" id="menu-btn" aria-label="Apri il menu" aria-expanded="false" aria-controls="nav-links">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#chi-sono" class="active">Chi sono</a></li>
+      <li><a href="#progetti">I miei progetti</a></li>
+      <li><a href="#contatti">Contatti</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+  <!-- Chi sono -->
+  <section id="chi-sono" class="about">
+    <div class="wrap about-grid">
+      <div class="about-text">
+        <p class="eyebrow">SmartFace · Siti web per attività commerciali</p>
+        <h1>Siti web che lavorano <em>per la tua attività.</em></h1>
+        <p>SmartFace crea il sito web su misura per te e la tua attività commerciale, integrando tutti gli strumenti necessari per semplificare il tuo lavoro e farti trovare dai potenziali clienti.</p>
+        <p>Attraverso una consulenza con i nostri developer potrai personalizzare ogni aspetto e funzione del tuo sito, il tuo biglietto da visita nel mondo digitale.</p>
+        <div class="actions">
+          <a href="#progetti" class="btn">Guarda i progetti</a>
+          <a href="#contatti" class="btn btn-consulenza">Prenota una consulenza</a>
+        </div>
+      </div>
+
+      <aside class="profile" aria-label="Profilo in breve">
+        <div class="profile-logo"><div class="logo" role="img" aria-label="Logo SmartFace"><span>SMART</span><span class="l-face">FACE</span></div></div>
+        <ul class="facts">
+          <li><span>Lingue</span><span>Italiano, Inglese</span></li>
+          <li><span>Stato</span><span class="status">Disponibile su appuntamento</span></li>
+        </ul>
+        <div class="skills" aria-label="Servizi">
+          <span class="chip">Appuntamenti</span><span class="chip">Prenotazioni</span><span class="chip">E-commerce</span>
+          <span class="chip">Pagamenti</span><span class="chip">Gestionali</span><span class="chip">Calendari</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Progetti -->
+  <section id="progetti" class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Lavori selezionati</p>
+          <h2>I miei progetti</h2>
+          <p class="lead">Una selezione di lavori recenti. Titoli e descrizioni sono segnaposto da sostituire con i tuoi casi studio.</p>
+        </div>
+        <div class="filters" role="group" aria-label="Filtra progetti">
+          <button class="filter" id="f-tutti" data-filter="tutti" aria-pressed="true">Tutti</button>
+          <button class="filter" id="f-web" data-filter="web" aria-pressed="false">Web</button>
+          <button class="filter" id="f-app" data-filter="app" aria-pressed="false">App</button>
+          <button class="filter" id="f-brand" data-filter="brand" aria-pressed="false">Brand</button>
+        </div>
+      </div>
+
+      <div class="cards" id="cards">
+        <article class="card" data-cat="web">
+          <div class="thumb t-grid" data-label="1440 × 900"></div>
+          <div class="card-body">
+            <div class="card-meta"><span>Sito web</span><span>2026</span></div>
+            <h3>Studio di architettura</h3>
+            <p>Sito vetrina con archivio progetti filtrabile e pagine caso studio ottimizzate per il mobile.</p>
+            <div class="card-foot"><span class="chip">HTML</span><span class="chip">CSS</span><span class="chip">JS</span></div>
+            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+          </div>
+        </article>
+
+        <article class="card" data-cat="app">
+          <div class="thumb t-split" data-label="390 × 844"></div>
+          <div class="card-body">
+            <div class="card-meta"><span>App mobile</span><span>2025</span></div>
+            <h3>Prenotazioni palestra</h3>
+            <p>Interfaccia per prenotare corsi in tre tocchi, con calendario settimanale e notifiche.</p>
+            <div class="card-foot"><span class="chip">React Native</span><span class="chip">Figma</span></div>
+            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+          </div>
+        </article>
+
+        <article class="card" data-cat="brand">
+          <div class="thumb t-circle" data-label="logo · palette · font"></div>
+          <div class="card-body">
+            <div class="card-meta"><span>Identità visiva</span><span>2025</span></div>
+            <h3>Torrefazione di quartiere</h3>
+            <p>Logo, palette e linee guida per packaging, insegna e profili social.</p>
+            <div class="card-foot"><span class="chip">Branding</span><span class="chip">Illustrator</span></div>
+            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+          </div>
+        </article>
+
+        <article class="card" data-cat="web">
+          <div class="thumb t-bars" data-label="dashboard"></div>
+          <div class="card-body">
+            <div class="card-meta"><span>Web app</span><span>2025</span></div>
+            <h3>Pannello ordini e-commerce</h3>
+            <p>Dashboard per gestire ordini e magazzino, progettata con il team operativo del cliente.</p>
+            <div class="card-foot"><span class="chip">React</span><span class="chip">TypeScript</span></div>
+            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+          </div>
+        </article>
+
+        <article class="card" data-cat="app">
+          <div class="thumb t-dots" data-label="prototipo"></div>
+          <div class="card-body">
+            <div class="card-meta"><span>Prototipo</span><span>2024</span></div>
+            <h3>Diario delle abitudini</h3>
+            <p>Concept di app per tracciare abitudini quotidiane, testato con dodici utenti.</p>
+            <div class="card-foot"><span class="chip">UX research</span><span class="chip">Figma</span></div>
+            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+          </div>
+        </article>
+
+        <article class="card" data-cat="brand">
+          <div class="thumb t-lines" data-label="A4 · 210 × 297 mm"></div>
+          <div class="card-body">
+            <div class="card-meta"><span>Editoria</span><span>2024</span></div>
+            <h3>Rivista di un festival</h3>
+            <p>Impaginazione del programma stampato e della versione digitale sfogliabile.</p>
+            <div class="card-foot"><span class="chip">InDesign</span><span class="chip">Tipografia</span></div>
+            <a href="#progetti" class="card-link">Vedi il progetto →</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contatti -->
+  <section id="contatti" class="section">
+    <div class="wrap contact-wrap">
+      <div>
+        <p class="eyebrow">Contatti</p>
+        <h2>Parliamo del tuo progetto</h2>
+        <p class="lead">Rispondiamo di solito entro due giorni lavorativi. Lascia i tuoi dati e raccontaci la tua attività: ti ricontattiamo per fissare una consulenza.</p>
+      </div>
+
+      <form id="contact-form" novalidate>
+        <fieldset class="group">
+          <legend>I tuoi dati</legend>
+          <div class="grid-3">
+            <div class="field">
+              <label for="nome">Nome e cognome *</label>
+              <input id="nome" name="nome" type="text" placeholder="Mario Rossi" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="mail">Email *</label>
+              <input id="mail" name="mail" type="email" placeholder="mario@esempio.it" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="telefono">Telefono *</label>
+              <input id="telefono" name="telefono" type="tel" placeholder="+39 333 123 4567" autocomplete="tel" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>Social</legend>
+          <div class="grid-3">
+            <div class="field">
+              <label for="linkedin">LinkedIn</label>
+              <input id="linkedin" name="linkedin" type="text" placeholder="linkedin.com/in/nome">
+            </div>
+            <div class="field">
+              <label for="instagram">Instagram</label>
+              <input id="instagram" name="instagram" type="text" placeholder="@nomeattivita">
+            </div>
+            <div class="field">
+              <label for="facebook">Facebook</label>
+              <input id="facebook" name="facebook" type="text" placeholder="facebook.com/nomeattivita">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>Messaggio</legend>
+          <div class="field">
+            <label for="oggetto">Oggetto *</label>
+            <input id="oggetto" name="oggetto" type="text" placeholder="Nuovo sito per la mia attività" required>
+          </div>
+          <div class="field">
+            <label for="messaggio">Messaggio *</label>
+            <textarea id="messaggio" name="messaggio" placeholder="Raccontaci in breve la tua attività e di cosa hai bisogno…" required></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-foot">
+          <p class="form-msg" id="form-msg" aria-live="polite">I campi con * sono obbligatori.</p>
+          <button type="submit" class="btn">Richiedi consulenza</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>© <span id="year">2026</span> SmartFace</span>
+    <a href="#chi-sono">Torna su ↑</a>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  const menuBtn = document.getElementById('menu-btn');
+  const links = document.querySelectorAll('.nav-links a');
+
+  // Menu mobile
+  menuBtn.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', open);
+    menuBtn.setAttribute('aria-label', open ? 'Chiudi il menu' : 'Apri il menu');
+  });
+  links.forEach(a => a.addEventListener('click', () => {
+    nav.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }));
+
+  // Bordo della nav allo scroll + link attivo
+  const sections = [...document.querySelectorAll('main section')];
+  function onScroll() {
+    nav.classList.toggle('scrolled', window.scrollY > 8);
+    const y = window.scrollY + window.innerHeight * 0.35;
+    let current = sections[0].id;
+    sections.forEach(s => { if (s.offsetTop <= y) current = s.id; });
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) current = sections.at(-1).id;
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Filtri progetti
+  const filters = document.querySelectorAll('.filter');
+  const cards = document.querySelectorAll('.card');
+  filters.forEach(btn => btn.addEventListener('click', () => {
+    const f = btn.dataset.filter;
+    filters.forEach(b => b.setAttribute('aria-pressed', b === btn));
+    cards.forEach(c => { c.hidden = f !== 'tutti' && c.dataset.cat !== f; });
+  }));
+
+  // Copia contatti
+  document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', () => {
+    const el = document.getElementById(btn.dataset.target);
+    const done = () => { btn.textContent = 'Copiato'; setTimeout(() => btn.textContent = 'Copia', 1600); };
+    const select = () => {
+      const r = document.createRange(); r.selectNodeContents(el);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selezionato';
+      setTimeout(() => btn.textContent = 'Copia', 1600);
+    };
+    try { navigator.clipboard.writeText(el.textContent).then(done, select); } catch { select(); }
+  }));
+
+  // Form (demo: nessun invio reale)
+  const form = document.getElementById('contact-form');
+  const msg = document.getElementById('form-msg');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const nome = form.nome.value.trim(), mail = form.mail.value.trim(), tel = form.telefono.value.trim(), oggetto = form.oggetto.value.trim(), testo = form.messaggio.value.trim();
+    msg.classList.remove('ok');
+    if (!nome || !mail || !tel || !oggetto || !testo) { msg.textContent = 'Compila nome, email, telefono, oggetto e messaggio.'; return; }
+    if (!/^\+?[\d\s().-]{6,}$/.test(tel)) { msg.textContent = 'Il numero di telefono non è valido. Usa solo cifre, spazi e il prefisso +39.'; form.telefono.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { msg.textContent = "L'indirizzo email non è valido. Controlla e riprova."; form.mail.focus(); return; }
+    msg.textContent = `Grazie ${nome}! Questa è un'anteprima: collega il modulo a un servizio per ricevere le richieste.`;
+    msg.classList.add('ok');
+    form.reset();
+  });
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
