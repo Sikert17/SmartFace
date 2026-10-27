@@ -293,6 +293,9 @@
   .form-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
   .form-msg { margin: 0; font-size: .92rem; color: var(--muted); }
   .form-msg.ok { color: var(--fg); }
+  .form-msg.err { color: #f2a7a0; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .btn:disabled { opacity: .6; cursor: progress; }
 
   footer { border-top: 1px solid var(--line); padding-block: 28px; color: var(--muted); font-size: .9rem; }
   .foot-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
@@ -448,6 +451,8 @@
       </div>
 
       <form id="contact-form" novalidate>
+        <input type="hidden" name="_subject" value="Nuova richiesta di consulenza dal sito SmartFace">
+        <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
         <fieldset class="group">
           <legend>I tuoi dati</legend>
           <div class="grid-3">
@@ -457,7 +462,7 @@
             </div>
             <div class="field">
               <label for="mail">Email *</label>
-              <input id="mail" name="mail" type="email" placeholder="mario@esempio.it" autocomplete="email" required>
+              <input id="mail" name="email" type="email" placeholder="mario@esempio.it" autocomplete="email" required>
             </div>
             <div class="field">
               <label for="telefono">Telefono *</label>
@@ -498,7 +503,7 @@
 
         <div class="form-foot">
           <p class="form-msg" id="form-msg" aria-live="polite">I campi con * sono obbligatori.</p>
-          <button type="submit" class="btn">Richiedi consulenza</button>
+          <button type="submit" class="btn" id="submit-btn">Richiedi consulenza</button>
         </div>
       </form>
     </div>
@@ -563,19 +568,39 @@
     try { navigator.clipboard.writeText(el.textContent).then(done, select); } catch { select(); }
   }));
 
-  // Form (demo: nessun invio reale)
+  // Form contatti: invio a Formspree via fetch
+  const FORMSPREE_URL = 'https://formspree.io/f/mdeegvzr';
   const form = document.getElementById('contact-form');
   const msg = document.getElementById('form-msg');
-  form.addEventListener('submit', e => {
+  const submitBtn = document.getElementById('submit-btn');
+  const mailInput = document.getElementById('mail');
+  const show = (text, cls) => { msg.textContent = text; msg.className = 'form-msg' + (cls ? ' ' + cls : ''); };
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    const nome = form.nome.value.trim(), mail = form.mail.value.trim(), tel = form.telefono.value.trim(), oggetto = form.oggetto.value.trim(), testo = form.messaggio.value.trim();
-    msg.classList.remove('ok');
-    if (!nome || !mail || !tel || !oggetto || !testo) { msg.textContent = 'Compila nome, email, telefono, oggetto e messaggio.'; return; }
-    if (!/^\+?[\d\s().-]{6,}$/.test(tel)) { msg.textContent = 'Il numero di telefono non è valido. Usa solo cifre, spazi e il prefisso +39.'; form.telefono.focus(); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { msg.textContent = "L'indirizzo email non è valido. Controlla e riprova."; form.mail.focus(); return; }
-    msg.textContent = `Grazie ${nome}! Questa è un'anteprima: collega il modulo a un servizio per ricevere le richieste.`;
-    msg.classList.add('ok');
-    form.reset();
+    const nome = form.nome.value.trim(), mail = mailInput.value.trim(), tel = form.telefono.value.trim(), oggetto = form.oggetto.value.trim(), testo = form.messaggio.value.trim();
+    if (!nome || !mail || !tel || !oggetto || !testo) { show('Compila nome, email, telefono, oggetto e messaggio.', 'err'); return; }
+    if (!/^\+?[\d\s().-]{6,}$/.test(tel)) { show('Il numero di telefono non è valido. Usa solo cifre, spazi e il prefisso +39.', 'err'); form.telefono.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { show("L'indirizzo email non è valido. Controlla e riprova.", 'err'); mailInput.focus(); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Invio in corso…';
+    show('');
+    try {
+      const res = await fetch(FORMSPREE_URL, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      if (res.ok) {
+        show(`Grazie ${nome}, la tua richiesta è stata inviata. Ti ricontatteremo entro due giorni lavorativi.`, 'ok');
+        form.reset();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const detail = data.errors ? data.errors.map(x => x.message).join(' ') : '';
+        show(`Non siamo riusciti a inviare la richiesta. ${detail} Riprova tra qualche minuto.`.replace(/\s+/g, ' '), 'err');
+      }
+    } catch {
+      show('Invio non riuscito: controlla la connessione e riprova.', 'err');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Richiedi consulenza';
+    }
   });
 
   document.getElementById('year').textContent = new Date().getFullYear();
