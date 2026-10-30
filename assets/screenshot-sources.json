@@ -7,7 +7,8 @@
       "immagine": "assets/studio-cerasa.jpg",
       "sha256": {
         "index.html": "c15a454e077bad8d294feb9f00b8dcab6e9c644f5330ff9621a1c4d77e550ce5"
-      }
+      },
+      "aggiornamento_automatico": true
     },
     {
       "nome": "Ti Acconcio Barberia",
@@ -17,7 +18,9 @@
         "index.html": "a34b36243222958c4d9c4ccd6622410b7fba110eea2821c0d66680c0beed1ec2",
         "logo-black.png": "cbf39032a6e3271038837c068c5c0ea3147253ceff02defaa6a4361b22bccb02",
         "logo-white.png": "5d6122ebd152124e08861e6e80a65d6b5a45b7479383c59d9d785b916e23e62d"
-      }
+      },
+      "aggiornamento_automatico": false,
+      "nota": "Lo screenshot usa un logo fittizio (Barbiere & Co.) al posto di quello reale: non rifarlo in automatico."
     }
   ]
 }
