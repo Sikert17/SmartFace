@@ -21,6 +21,15 @@
       },
       "aggiornamento_automatico": false,
       "nota": "Lo screenshot usa un logo fittizio (Barbiere & Co.) al posto di quello reale: non rifarlo in automatico."
+    },
+    {
+      "nome": "Aurelio Carollo Coaching",
+      "artifact": "https://claude.ai/artifact/EH1qvZkfX1Gdaunz4pg2nH",
+      "immagine": "assets/carollo-coaching.jpg",
+      "sha256": {
+        "index.html": "afa80af54b28bfc8032a2e1b8c48c37ec7b57733a3ac2a6f5cb53164072e3fbc"
+      },
+      "aggiornamento_automatico": true
     }
   ]
 }
